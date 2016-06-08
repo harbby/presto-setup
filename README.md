@@ -1,5 +1,5 @@
 # presto-setup
-#加快presto部署和启动
+#一键完成 presto部署自动部署和配置，一键启动和不安比
 
 使用步骤：
 将sbin文件夹放到 master节点的presto根节点中
