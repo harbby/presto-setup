@@ -1,18 +1,21 @@
 # presto-setup
-加快presto部署和启动
+#加快presto部署和启动
 
-master 文件里为coordinator 节点
+使用步骤：
+将sbin文件夹放到 master节点的presto根节点中
 
-slaves 文件里面为 工作节点
+sbin目录内容如下：
+
+master 文件里为 所有coordinator节点
+slaves 文件里面为 所有工作节点
 
 start_all.py 为集群启动脚本
 stop_all.py 为集群关闭脚本
 
 安装：
-
-1，自行创建etc文件夹 
-按需创建jvm.config log.properties catalog
-而 config.properties和node.properties 安装时会自动创建
+1，在presto根目录 自行创建etc文件夹 
+按需创建jvm.config 和 log.properties 和 catalog文件夹
+而 config.properties和node.properties 安装时会自动创建(不需要手动创建了)
 
 2，sbin 目录下相关配置
 local.properties 文件里面配置 单机模式   >> config.properties内容
