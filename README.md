@@ -1,5 +1,5 @@
 # presto-setup
-#一键完成 presto部署自动部署和配置，一键启动和不安比
+#一键完成 presto部署自动部署和配置，一键部署集群 和 一键启动集群
 
 使用步骤：
 将sbin文件夹放到 master节点的presto根节点中
