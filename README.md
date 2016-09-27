@@ -2,7 +2,7 @@
 #一键完成 presto部署自动部署和配置，一键部署集群 和 一键启停集群
 
 使用步骤：
-将sbin文件夹放到 preto根目录下，然后上传到服务器　master节点任意目录(非安装目录,这里默认master打通了所有的ssh)
+将sbin文件夹放到 presto根目录下，然后上传到服务器　master节点任意目录(非安装目录,这里默认master打通了所有的ssh)
 
 sbin目录内容如下：
 <pre>
