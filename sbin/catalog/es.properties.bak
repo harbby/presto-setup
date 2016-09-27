@@ -1,0 +1,4 @@
+connector.name=elasticsearch
+elasticsearch-server=localhost
+elasticsearch-port=9300
+elasticsearch-clustername=elasticsearch_demo
