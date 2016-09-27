@@ -26,8 +26,8 @@ if __name__=='__main__':
 	print 'master=',master
 	print 'slaves=',slaves
 	#### 下面开始 合并 分发文件
-	nameall=reduce(lambda x,y:x if y in x else x+[y], [[],]+master+slaves)  ##犀利的去合并重复语句
+	nameall=reduce(lambda x,y:x if y in x else x+[y], [[],]+master+slaves)  ##去重合并
 	print 	nameall
 	for i in nameall:
-		os.system('ssh '+i+' \''+pwd+'/../bin/launcher start\'')
+		os.system("ssh "+i+" ' "+pwd+"/../bin/launcher start'")
 
