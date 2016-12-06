@@ -29,5 +29,5 @@ if __name__=='__main__':
 	nameall=reduce(lambda x,y:x if y in x else x+[y], [[],]+master+slaves)  ##去重合并
 	print 	nameall
 	for i in nameall:
-		os.system("ssh "+i+" ' "+pwd+"/../bin/launcher start'")
+		os.system("ssh "+i+" ' "+pwd+"/launcher start'")
 

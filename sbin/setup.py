@@ -16,31 +16,41 @@ if setup_path[-1] == '/':
 
 # ----------------------配置验证------------------------------------
 # coordinator　协调者
-coordinator = {
-    "coordinator": "true"
-    , "node-scheduler.include-coordinator": "false"
-    , "discovery-server.enabled": "true"
-}
+coordinator = '''
+coordinator=true
+node-scheduler.include-coordinator=false
+discovery-server.enabled=true
+'''
 # worker　工作者
-worker = {
-    "coordinator": "false"
-}
+worker = '''
+coordinator=false
+'''
+
 # local　　协调and工作者(local 和小集群才使用)
-local = {
-    "coordinator": "true"
-    , "node-scheduler.include-coordinator": "true"
-    , "discovery-server.enabled": "true"
-}
+local = '''
+coordinator=true
+node-scheduler.include-coordinator=true
+discovery-server.enabled=true
+'''
+
 node={}
+jvm_config=''
+log_properties=''
 try:
     import conf
-    coordinator = dict(conf.allconf.items() + coordinator.items())
-    worker = dict(conf.allconf.items() + worker.items())
-    local = dict(conf.allconf.items() + local.items())
-    node = conf.node
-    node['node.data-dir'] = setup_path + '/data'
+    coordinator = coordinator.strip()+'\n'+conf.allconf.strip()
+    worker = worker.strip()+'\n'+conf.allconf.strip()
+    local = local.strip() +'\n'+ conf.allconf.strip()
+    #print coordinator,'\n'
+    #print worker,'\n'
+    #print local,'\n'
+
+    jvm_config = conf.jvm_config.strip()
+    log_properties = conf.log_properties.strip()
+
 except Exception as e:
-    print 'conf.py配置有错误', e.message
+    print 'conf.py配置有错误', e
+    exit(0)
 
 # ----------------------------------验证结束-------------------------------------
 
@@ -58,15 +68,18 @@ def listwork(path):
     return tmp
 #######################################
 # 把字典转换成文本
-def getconf(conf,host):
+def getNodeconf(host):
+    node = conf.node
+    #print node
     outtmp = ''
-    for key in conf.keys():
-        if 'node.id' in key:  ##node 中有node.id字段需要替换
-            outtmp += key + '='+conf[key].replace('*', '') + host.upper() + '\n'
+    for line in node.split('\n'):
+        if 'node.id' in line:  ##node 中有node.id字段需要替换
+            outtmp += line.replace('*','')+host+'\n'
+        elif 'node.data-dir' in line:
+            outtmp += 'node.data-dir=' + setup_path + '/data' + '\n'
         else:
-            outtmp += key + '=' + str(conf[key]) + '\n'
+            outtmp += line + '\n'
     return outtmp
-
 
 ###############
 '''
@@ -75,17 +88,15 @@ def getconf(conf,host):
 '''
 if __name__ == '__main__':
     print '''
-    *************************************************************
-    因产线环境多为jdk1.7 友情建议 请在bin/launcher文件中配置如下内容:
-    JRE_HOME=${0%/*}/../jre
-    export PATH=$JRE_HOME/bin:$PATH
+*************************************************************
+因产线环境多为jdk1.7 友情建议 可以内置一个jre:
     '''
     print '****************************************************************************'
-    if not os.path.exists(pwd+'/../jre'):
-        print '抱歉根目录下　未发现java8 的jre　文件夹,请放入jre文件夹后进行安装'
-        exit(0)
+    JAVA_HOME=__import__('conf').JAVA_HOME
+    print '您配置的java8　路径为:',JAVA_HOME
     if os.path.exists(pwd+'/catalog/hive.properties'):
-        print '发现catalog/hive.properties连接器　您的配置如下:\n',os.system('cat '+pwd+'/catalog/hive.properties')
+        print '发现catalog/hive.properties连接器　您的配置如下:\n'
+        os.system('cat '+pwd+'/catalog/hive.properties')
     print '*****************************************************************************'
     ok = raw_input('\n即将安装presto到:' + setup_path + '目录下\n 您确认以上配置后是否继续安装(y or n)? ')
     if ok not in ['y', 'Y']:
@@ -94,11 +105,11 @@ if __name__ == '__main__':
 
     ##清理可能存在的垃圾
     os.system('rm -rf ' + pwd + '/../data')  ## rm data
-    os.system('rm -rf ' + pwd + '/../etc')  ## rm data
-    os.mkdir(pwd + '/../etc')
-    os.system('cp '+pwd+'/log.properties '+pwd+'/../etc')
-    os.system('cp ' + pwd + '/jvm.config ' + pwd + '/../etc')
-    os.system('cp -r ' + pwd + '/catalog ' + pwd + '/../etc')
+    os.system('rm -rf ' + pwd + '/../etc')
+    os.system('mkdir -p '+pwd + '/../etc')
+    os.system('echo \''+jvm_config+'\' > '+pwd+'/../etc/jvm.config')
+    os.system('echo \''+log_properties+'\' > '+pwd+'/../etc/log.properties')
+    os.system('cp -rf ' + pwd + '/catalog ' + pwd + '/../etc')
 
     ## 获取节点列表
     master = listwork(pwd + '/master')
@@ -125,15 +136,15 @@ if __name__ == '__main__':
         if i in slaves:
             if i in master:  ## in master and slaves
                 print i, ' 是local模式节点 next setup local!'
-                os.system('ssh ' + i + '  \'echo \"' + getconf(local,i) + '\" > ' + setup_path + '/etc/config.properties\'')
+                os.system('ssh ' + i + '  \'echo \"' + local + '\" > ' + setup_path + '/etc/config.properties\'')
             else:  ## in slaves
                 print i, 'setup slave节点'
-                os.system('ssh ' + i + '  \'echo \"' + getconf(worker,i) + '\" > ' + setup_path + '/etc/config.properties\'')
+                os.system('ssh ' + i + '  \'echo \"' + worker + '\" > ' + setup_path + '/etc/config.properties\'')
         else:  ## in master
             print i, 'setup master节点'
-            os.system('ssh ' + i + '  \'echo \"' + getconf(coordinator,i) + '\" > ' + setup_path + '/etc/config.properties\'')
+            os.system('ssh ' + i + '  \'echo \"' + coordinator + '\" > ' + setup_path + '/etc/config.properties\'')
 
         ### 下面进行node 设置
-        os.system('ssh ' + i + '  \'echo \"' + getconf(node,i) + '\" > ' + setup_path + '/etc/node.properties\'')
+        os.system('ssh ' + i + '  \'echo \"' + getNodeconf(i) + '\" > ' + setup_path + '/etc/node.properties\'')
 
 

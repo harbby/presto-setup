@@ -29,4 +29,4 @@ if __name__=='__main__':
 	nameall=reduce(lambda x,y:x if y in x else x+[y], [[],]+master+slaves)  ##犀利的去合并重复语句
 	print 	nameall
 	for i in nameall:
-		os.system("ssh " + i + " ' " + pwd + "/../bin/launcher stop'")
+		os.system("ssh " + i + " ' " + pwd + "/launcher stop'")

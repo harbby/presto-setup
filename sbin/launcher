@@ -1,0 +1,8 @@
+#!/usr/bin/env python2
+# coding=utf-8
+import os, sys
+
+JAVA_HOME=__import__('conf').JAVA_HOME
+os.environ['PATH']=JAVA_HOME+'/bin'+':'+os.environ['PATH']
+
+os.system(sys.path[0]+'/../bin/launcher.py '+ ' '.join(str(i) for i in sys.argv[1:]))
